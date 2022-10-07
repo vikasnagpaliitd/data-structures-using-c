@@ -25,9 +25,8 @@ void init(queue_t *p_queue)
 void display(queue_t *p_queue)
 {
   node_t *ptr;
-  node_t *front = p_queue->front;
 
-  ptr = front;
+  ptr = p_queue->front;
 
   printf("Linked list contents : ");
   while (ptr != NULL)
