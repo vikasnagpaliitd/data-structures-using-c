@@ -1,11 +1,10 @@
 // Linked list : dequeue to return the value
-// Only problem : inefficient enqueue O(N)// next step: front and rear
 #include <stdio.h>
 #include <stdlib.h>
 
-#define SUCESS 1
+#define SUCCESS 1
 #define FAILURE 0
-#define INVALID_VALUE -9999
+
 typedef struct node
 {
   int data;
@@ -17,6 +16,11 @@ typedef struct queue
   node_t *front;
   node_t *rear;
 } queue_t;
+
+void init(queue_t *p_queue)
+{
+  p_queue->front = p_queue->rear = NULL;
+}
 
 void display(queue_t *p_queue)
 {
@@ -35,33 +39,38 @@ void display(queue_t *p_queue)
 }
 
 
-// need to return the value
-int dequeue(queue_t *p_queue)
+// Returns SUCCESS/FAILURE 
+int dequeue(queue_t *p_queue, int *p_elem)
 {
-  node_t *p_node;
-  node_t *front = p_queue->front;
-  // TBD : rear will change if we dequeue the last (and only) element
+  node_t *ptr;
 
-  // We need to be careful if the list is empty
-  if (front == NULL)
+  // handle empty Q
+  if (p_queue->front == NULL)
   {
-     *p_elem = INVALID_VALUE;
-     return front;
+    printf("debug: dequeue : front is NULL... returning FAILURE\n");
+    return FAILURE;
   }
-
-  // We come here only if list is non empty
-  p_node = front; // store pointer to the to-be-deleted node
-  front = front->next; // move front
-  printf("debug:dequeue: deleting node with value %d\n", p_node->data);
-  *p_elem = p_node->data;
-  free(p_node);
-
-  return front;
+    
+  // handle single element Q
+  if (p_queue->front == p_queue->rear)
+  {
+    printf("debug: dequeue : single element queue. now becoming empty...\n");
+    *p_elem = p_queue->front->data;
+    free(p_queue->front);
+    p_queue->front = p_queue->rear = NULL;
+    return SUCCESS;
+  }
+  
+  // Queue having atleast 2 elements
+  *p_elem = p_queue->front->data;
+  ptr = p_queue->front;
+  p_queue->front = p_queue->front->next;
+  free(ptr);
+  return SUCCESS;
 }
 // Returns SUCCESS/FAILURE
 int enqueue(queue_t *p_queue, int value)
 {
-  node_t *ptr;
   node_t *p_newnode;
 
   // Allocate node and initialize it  
@@ -72,19 +81,16 @@ int enqueue(queue_t *p_queue, int value)
 
  
   // Handle empty list case 
-  if (front == NULL)
+  if (p_queue->rear == NULL)
   {
-    front = p_newnode;
-    return front;
+    p_queue->front = p_queue->rear = p_newnode;
+    return SUCCESS; 
   }
  
-  // Make ptr reach the last node 
-  ptr = front;
-  while (ptr->next != NULL)
-     ptr = ptr->next;
-  
-  ptr->next = p_newnode;
-  return front;
+  // We come here if non-empty Q 
+  p_queue->rear->next = p_newnode;
+  p_queue->rear = p_newnode;
+  return SUCCESS;
 }
 
 int main()
@@ -92,9 +98,14 @@ int main()
   queue_t queue;
   int elem, i;
 
+  init(&queue);
+
   enqueue(&queue, 10);
+  display(&queue);
   enqueue(&queue, 20);
+  display(&queue);
   enqueue(&queue, 30);
+  display(&queue);
   enqueue(&queue, 40);
 
   display(&queue);
