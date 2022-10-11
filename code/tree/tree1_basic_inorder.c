@@ -59,6 +59,8 @@ int main()
    root = create_node(10);
 
    root->left = create_node(5);
+   root->left->left = create_node(3);
+   root->left->right = create_node(7);
    root->right = create_node(20);
 
    print_tree(root); 
