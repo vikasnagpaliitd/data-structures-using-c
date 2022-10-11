@@ -77,17 +77,17 @@ void print_tree(treenode_t *root, int indent_level)
    print_tree(root->left, indent_level + 1);
    print_tree(root->right, indent_level + 1);
 }
-//TBD : value of root seems to go wrong as soon as this function is called
+
 //void free_tree(treenode_t *root)
-void free_tree(treenode_t **p_root)
+void free_tree(treenode_t *root)
 {
-   if (*p_root == NULL)
+   if (root == NULL)
       return;
 
-   free_tree(&((*p_root)->left));
-   free_tree(&((*p_root)->right));
-   free(*p_root);
-   *p_root = NULL;
+   free_tree(root->left);
+   free_tree(root->right);
+   free(root->section_name);
+   free(root);
 }
 
 int main()
@@ -105,6 +105,6 @@ int main()
 
    print_tree(root, 0);
 
-   free_tree(&root);
+   free_tree(root);
    exit(0);
 }
