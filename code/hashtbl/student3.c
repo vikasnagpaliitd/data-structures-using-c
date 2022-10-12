@@ -1,4 +1,4 @@
-/* Approach 3 : Enhances approach 1 by adding collision handling
+/* Approach 3 : student3.c :Enhances approach 1 by adding collision handling
  *   Does Linear Probing.
  * Author: Vikas Nagpal : http://anuttaralearning.com/
  */
@@ -149,14 +149,14 @@ int search_hash_tbl(student_t hash_tbl[NUM_BUCKETS],
 
 /* Function : To delete a given element from the hash table 
  */
-int delete_hash_tbl(student_t hash_tbl[NUM_BUCKETS], char name[])
+int delete_hash_tbl_elem(student_t hash_tbl[NUM_BUCKETS], char name[])
 {
    int index, last_index;
    student_t *p_rec;
 
    /* Generate Index */
    index = hash_func(name);
-   printf("delete_hash_tbl : index = %d\n", index);
+   printf("delete_hash_tbl_elem : index = %d\n", index);
 
    // Before starting, let us know when to stop
    last_index = (index + NUM_BUCKETS - 1) % NUM_BUCKETS;
@@ -259,11 +259,11 @@ int main()
          printf("Which name do you want to delete?\n");
          scanf("%s", name);
 
-         ret = delete_hash_tbl(hash_tbl, name);
+         ret = delete_hash_tbl_elem(hash_tbl, name);
          if (ret == 1)
-           printf("delete_hash_tbl succeeded\n");
+           printf("delete_hash_tbl_elem succeeded\n");
          else
-           printf("delete_hash_tbl failed\n");
+           printf("delete_hash_tbl_elem failed\n");
          break;
 
        case 0: /* Exit */

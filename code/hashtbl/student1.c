@@ -1,4 +1,4 @@
-// Approach 1 : Does not have collision handling 
+// Approach 1 : student1.c : Does not have collision handling 
 // Author: Vikas Nagpal : http://anuttaralearning.com/
 #include <stdio.h>
 #include <string.h>
@@ -110,18 +110,18 @@ int search_hash_tbl(student_t hash_tbl[NUM_BUCKETS],
 
 /* Function : To delete a given element from the hash table 
  */
-int delete_hash_tbl(student_t hash_tbl[NUM_BUCKETS], char name[])
+int delete_hash_tbl_elem(student_t hash_tbl[NUM_BUCKETS], char name[])
 {
    int index;
 
    /* Generate Index */
    index = hash_func(name);
-   printf("delete_hash_tbl : index = %d\n", index);
+   printf("delete_hash_tbl_elem : index = %d\n", index);
 
    /* Is the element there ? */
    if (strcmp(hash_tbl[index].name, name) != 0)
    {
-      printf("delete_hash_tbl : record with name %s does not exist\n", name);
+      printf("delete_hash_tbl_elem : record with name %s does not exist\n", name);
       return 0; // FAILURE
    }
 
@@ -199,11 +199,11 @@ int main()
          printf("Which name do you want to delete?\n");
          scanf("%s", name);
 
-         ret = delete_hash_tbl(hash_tbl, name);
+         ret = delete_hash_tbl_elem(hash_tbl, name);
          if (ret == 1)
-           printf("delete_hash_tbl succeeded\n");
+           printf("delete_hash_tbl_elem succeeded\n");
          else
-           printf("delete_hash_tbl failed\n");
+           printf("delete_hash_tbl_elem failed\n");
          break;
 
        case 0: /* Exit */

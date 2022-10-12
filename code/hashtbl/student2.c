@@ -1,4 +1,4 @@
-/* Approach 2 :  Adds collision handling on approach 1.
+/* Approach 2 : student2.c : Adds collision handling on approach 1.
  *    Uses chaining.
  * Author: Vikas Nagpal : http://anuttaralearning.com/
  */
@@ -114,14 +114,14 @@ int search_hash_tbl(student_t *hash_tbl[NUM_BUCKETS],
 
 /* Function : To delete a given element from the hash table 
  */
-int delete_hash_tbl(student_t *hash_tbl[NUM_BUCKETS], char name[])
+int delete_hash_tbl_elem(student_t *hash_tbl[NUM_BUCKETS], char name[])
 {
    int index;
    student_t *p_rec, *p_prev; // p_rec : the node to be deleted. p_prev : previous node
 
    /* Generate Index */
    index = hash_func(name);
-   printf("delete_hash_tbl : index = %d\n", index);
+   printf("delete_hash_tbl_elem : index = %d\n", index);
 
    p_rec = hash_tbl[index];
    p_prev = NULL;
@@ -217,11 +217,11 @@ int main()
          printf("Which name do you want to delete?\n");
          scanf("%s", name);
 
-         ret = delete_hash_tbl(hash_tbl, name);
+         ret = delete_hash_tbl_elem(hash_tbl, name);
          if (ret == 1)
-           printf("delete_hash_tbl succeeded\n");
+           printf("delete_hash_tbl_elem succeeded\n");
          else
-           printf("delete_hash_tbl failed\n");
+           printf("delete_hash_tbl_elem failed\n");
          break;
 
        case 0: /* Exit */
