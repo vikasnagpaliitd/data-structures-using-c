@@ -9,6 +9,8 @@
     []
     []     _       _      _
     [] -->|_| --> |_| -->|_|             
+
+   Author: Vikas Nagpal : http://anuttaralearning.com/
 *************************************************************************/
 #include <stdio.h>
 #include <string.h>

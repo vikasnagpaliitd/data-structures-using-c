@@ -1,5 +1,6 @@
 /* Approach 3 : Enhances approach 1 by adding collision handling
- *   Does Linear Probing
+ *   Does Linear Probing.
+ * Author: Vikas Nagpal : http://anuttaralearning.com/
  */
 #include <stdio.h>
 #include <string.h>

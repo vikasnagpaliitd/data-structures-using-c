@@ -1,5 +1,6 @@
 /* Approach 2 :  Adds collision handling on approach 1.
- *    Uses chaining
+ *    Uses chaining.
+ * Author: Vikas Nagpal : http://anuttaralearning.com/
  */
 #include <stdio.h>
 #include <string.h>

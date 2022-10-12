@@ -1,5 +1,6 @@
 // This program uses hashing to access / insert / delete data.
 // The  problem of collision is not resolved.
+// Author: Vikas Nagpal : http://anuttaralearning.com/
   
 #include <stdio.h>
 #include <string.h>

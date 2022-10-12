@@ -1,4 +1,5 @@
-/* Approach 1 : Does not have collision handling */
+// Approach 1 : Does not have collision handling 
+// Author: Vikas Nagpal : http://anuttaralearning.com/
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
