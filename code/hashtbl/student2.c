@@ -1,4 +1,6 @@
-/* Approach 1 : Does not have collision handling */
+/* Approach 2 :  Adds collision handling on approach 1.
+ *    Uses chaining
+ */
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -15,21 +17,14 @@ typedef struct student
    char address[MAX_ADDRESS_LEN];
    int  age;
    char dept[MAX_DEPT_LEN];
+ 
+   struct student *next; // NOTICE IT : added to implement chains in the buckets
 } student_t;
 
 
-/* Hash Table
- * 1) Option 1 : array of structures
- * 2) Option 2 : array of pointer to struct
- */
-/* Empty entry is indicated by name being "" */
+/* Hash Table : Array of linked lists. Each bucket is a (possibly empty) chain*/
 #define NUM_BUCKETS 5
-student_t hash_tbl[NUM_BUCKETS];
-
-/* FoodForThought: Refer hash_tbl array.
- * 1) We waste memory for the empty buckets. Shall we have array of pointers (where each pointer,
- *   would finally be allocated to store one student record)
- */
+student_t *hash_tbl[NUM_BUCKETS];
 
 /* Function : hash_func */
 /* Implementation 1 : return the index starting from 'a' modullo size */
@@ -39,15 +34,15 @@ int hash_func(char *name)
 }
 
 /* Function : Initialize the hash table */
-void hash_tbl_init(student_t hash_tbl[NUM_BUCKETS])
+void hash_tbl_init(student_t *hash_tbl[NUM_BUCKETS])
 {
    int i;
    for(i=0;i<NUM_BUCKETS;i++)
-     hash_tbl[i].name[0] = '\0';
+     hash_tbl[i] = NULL;
 }
 
 /* Function : Insert an entry into the hash table */
-int insert_hash_tbl(student_t hash_tbl[NUM_BUCKETS],
+int insert_hash_tbl(student_t *hash_tbl[NUM_BUCKETS],
      char name[], int rollno, char address[], int age, char dept[])
 {
    int index;
@@ -57,21 +52,26 @@ int insert_hash_tbl(student_t hash_tbl[NUM_BUCKETS],
    index = hash_func(name);
    printf("insert_hash_tbl : index = %d\n", index);
 
-   /* Is the slot free? */
-   if (hash_tbl[index].name[0] != '\0')
-   {
-      printf("Slot is occupied. Can not add (TBD : implement collision handling)\n");
-      return 0; // FAILURE
-   }
-
+   /* Add at begining of linked list : O(1) */
+   p_rec = (student_t *) malloc(sizeof(student_t));
+   //TBD : error check on p_rec;
    /* Copy Data */
-   p_rec = &hash_tbl[index];
    strcpy(p_rec->name, name); 
    p_rec->rollno = rollno;
    strcpy(p_rec->address, address); 
    p_rec->age = age;
    strcpy(p_rec->dept, dept); 
 
+   /* Set pointers, so as to en-chain the new node at the beginning */
+   p_rec->next = hash_tbl[index];
+   hash_tbl[index] = p_rec;
+
+   /* Notice that we did not do duplicate key check. If we want to ensure uniqueness, we may 
+    * want to do duplicate check, which will ofcourse require O(K) traversal through the list.
+    * (K is expected length of linked list. i.e. expected number of colliding entries in one 
+    *  bucket)
+    */
+   
    return 1; // SUCCESS
 }
 
@@ -79,7 +79,7 @@ int insert_hash_tbl(student_t hash_tbl[NUM_BUCKETS],
  * hash_tbl and name are INPUT parameters.
  * other arguments are OUTPUT parameters.
  */
-int search_hash_tbl(student_t hash_tbl[NUM_BUCKETS],
+int search_hash_tbl(student_t *hash_tbl[NUM_BUCKETS],
      char name[], int *p_rollno, char address[], int *p_age, char dept[])
 {
    int index;
@@ -89,61 +89,79 @@ int search_hash_tbl(student_t hash_tbl[NUM_BUCKETS],
    index = hash_func(name);
    printf("search_hash_tbl : index = %d\n", index);
 
-   /* Is the element there ? */
-   if (strcmp(hash_tbl[index].name, name) != 0)
+   p_rec = hash_tbl[index];
+
+   while (p_rec != NULL)
    {
-      printf("search_hash_tbl : record with name %s does not exist\n", name);
-      return 0; // FAILURE
+      if (strcmp(p_rec->name, name) == 0)
+      {
+        /* Copy Data */
+        strcpy(name, p_rec->name); 
+        *p_rollno = p_rec->rollno;
+        strcpy(address, p_rec->address); 
+        *p_age = p_rec->age;
+        strcpy(dept, p_rec->dept); 
+        return 1; // SUCCESS. Found it
+      }
+
+      // Move to next node
+      p_rec = p_rec->next;
    }
 
-   /* Copy Data */
-   p_rec = &hash_tbl[index];
-   strcpy(name, p_rec->name); 
-   *p_rollno = p_rec->rollno;
-   strcpy(address, p_rec->address); 
-   *p_age = p_rec->age;
-   strcpy(dept, p_rec->dept); 
-
-   return 1; // SUCCESS
+   return 0; // FAILURE. Did not find it
 }
 
 /* Function : To delete a given element from the hash table 
  */
-int delete_hash_tbl(student_t hash_tbl[NUM_BUCKETS], char name[])
+int delete_hash_tbl(student_t *hash_tbl[NUM_BUCKETS], char name[])
 {
    int index;
+   student_t *p_rec, *p_prev; // p_rec : the node to be deleted. p_prev : previous node
 
    /* Generate Index */
    index = hash_func(name);
    printf("delete_hash_tbl : index = %d\n", index);
 
-   /* Is the element there ? */
-   if (strcmp(hash_tbl[index].name, name) != 0)
+   p_rec = hash_tbl[index];
+   p_prev = NULL;
+
+   while (p_rec != NULL)
    {
-      printf("delete_hash_tbl : record with name %s does not exist\n", name);
-      return 0; // FAILURE
-   }
+      if (strcmp(p_rec->name, name) == 0)
+      {
+        // Found it.
+        if (p_prev != NULL)
+          p_prev->next = p_rec->next;
+        else
+           hash_tbl[index] = p_rec->next;
+        free(p_rec);
+        return 1; // SUCCESS. found it. Deleted it.
+      }
 
-   /* Delete element by making name an empty string"" */
-   strcpy(hash_tbl[index].name,""); 
+      /* Keep Looking. Move pointers. */
+      p_prev = p_rec;
+      p_rec = p_rec->next;
+  }
 
-   return 1; // SUCCESS
+   return 0; // FAILURE. did not find it
 }
 
 /* Function : To print the hash table
  */
-void print_hash_tbl(student_t hash_tbl[NUM_BUCKETS])
+void print_hash_tbl(student_t *hash_tbl[NUM_BUCKETS])
 {
    int i;
    student_t *p_rec;
    printf("The elements in hash table are:\n");
    for(i=0;i<NUM_BUCKETS;i++)
    {
-     if (strcmp(hash_tbl[i].name, "") != 0)
+     p_rec = hash_tbl[i];
+     printf("Chain at Bucket %d:\n", i);
+     while (p_rec != NULL)
      {
-        p_rec = &hash_tbl[i];
-        printf("hash_tbl[%d]=<name=%s, rollno=%d, address=%s, age=%d, dept=%s>\n",
-       i, p_rec->name, p_rec->rollno, p_rec->address, p_rec->age, p_rec->dept);
+        printf("<name=%s, rollno=%d, address=%s, age=%d, dept=%s>\n",
+       p_rec->name, p_rec->rollno, p_rec->address, p_rec->age, p_rec->dept);
+        p_rec = p_rec->next;
      }
    }
 }

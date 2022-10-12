@@ -1,8 +1,11 @@
-/* Approach 1 : Does not have collision handling */
+/* Approach 3 : Enhances approach 1 by adding collision handling
+ *   Does Linear Probing
+ */
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <assert.h>
 
 #define MAX_NAME_LEN 30
 #define MAX_ADDRESS_LEN 80
@@ -15,6 +18,8 @@ typedef struct student
    char address[MAX_ADDRESS_LEN];
    int  age;
    char dept[MAX_DEPT_LEN];
+
+   int is_deleted; // NOTICE : added flag to indicate that the element was deleted 1/0 (TRUE/FALSE)
 } student_t;
 
 
@@ -43,27 +48,41 @@ void hash_tbl_init(student_t hash_tbl[NUM_BUCKETS])
 {
    int i;
    for(i=0;i<NUM_BUCKETS;i++)
+   {
      hash_tbl[i].name[0] = '\0';
+     hash_tbl[i].is_deleted = 0; // FALSE
+   }
 }
 
 /* Function : Insert an entry into the hash table */
 int insert_hash_tbl(student_t hash_tbl[NUM_BUCKETS],
      char name[], int rollno, char address[], int age, char dept[])
 {
-   int index;
+   int index, last_index;
    student_t *p_rec;
 
+  
    /* Generate Index */
    index = hash_func(name);
    printf("insert_hash_tbl : index = %d\n", index);
 
-   /* Is the slot free? */
-   if (hash_tbl[index].name[0] != '\0')
+   // Before starting, let us know when to stop
+   last_index = (index + NUM_BUCKETS - 1) % NUM_BUCKETS;
+   // Look for an empty slot. If this slot busy, try the next one (+1) 
+   while ((strcmp(hash_tbl[index].name, "") != 0) && (index != last_index))
    {
-      printf("Slot is occupied. Can not add (TBD : implement collision handling)\n");
-      return 0; // FAILURE
+      printf("Index %d is OCCUPIED with name %s\n", index, hash_tbl[index].name);
+      index = (index + 1) % NUM_BUCKETS;
    }
 
+   if (strcmp(hash_tbl[index].name, "") != 0)
+   {
+     printf("Could not find an empty slot\n");
+     assert(index == last_index);
+     return 0; // FAILURE
+   }
+   
+   printf("Storing the data at index %d\n", index); 
    /* Copy Data */
    p_rec = &hash_tbl[index];
    strcpy(p_rec->name, name); 
@@ -71,6 +90,9 @@ int insert_hash_tbl(student_t hash_tbl[NUM_BUCKETS],
    strcpy(p_rec->address, address); 
    p_rec->age = age;
    strcpy(p_rec->dept, dept); 
+  
+   // reset the flag 
+   p_rec->is_deleted = 0; // FALSE
 
    return 1; // SUCCESS
 }
@@ -82,52 +104,90 @@ int insert_hash_tbl(student_t hash_tbl[NUM_BUCKETS],
 int search_hash_tbl(student_t hash_tbl[NUM_BUCKETS],
      char name[], int *p_rollno, char address[], int *p_age, char dept[])
 {
-   int index;
+   int index, last_index;
    student_t *p_rec;
 
    /* Generate Index */
    index = hash_func(name);
    printf("search_hash_tbl : index = %d\n", index);
 
-   /* Is the element there ? */
-   if (strcmp(hash_tbl[index].name, name) != 0)
+   // Before starting, let us know when to stop
+   last_index = (index + NUM_BUCKETS - 1) % NUM_BUCKETS;
+   while ((strcmp(hash_tbl[index].name, name) != 0) && (index != last_index))
    {
-      printf("search_hash_tbl : record with name %s does not exist\n", name);
-      return 0; // FAILURE
+      if ((strcmp(hash_tbl[index].name, "") == 0) && (hash_tbl[index].is_deleted == 0))
+      {
+          printf("Found empty (non-deleted) slot at index %d index... stopping.\n", index);
+          return 0; // no hope of finding it. return FAILURE
+      }
+
+      printf("Looked at Index %d name=[%s], is_deleted=%d... Trying next...\n", index, hash_tbl[index].name, hash_tbl[index].is_deleted);
+
+      // Keep Looking
+      index = (index + 1) % NUM_BUCKETS;
    }
 
-   /* Copy Data */
-   p_rec = &hash_tbl[index];
-   strcpy(name, p_rec->name); 
-   *p_rollno = p_rec->rollno;
-   strcpy(address, p_rec->address); 
-   *p_age = p_rec->age;
-   strcpy(dept, p_rec->dept); 
-
-   return 1; // SUCCESS
+   // We come here if 1) we find the element or 2) table is completely full
+   if (strcmp(hash_tbl[index].name, name) == 0)
+   {
+     // Found the element
+     p_rec = &hash_tbl[index];
+     strcpy(name, p_rec->name); 
+     *p_rollno = p_rec->rollno;
+     strcpy(address, p_rec->address); 
+     *p_age = p_rec->age;
+     strcpy(dept, p_rec->dept); 
+     printf("Found:hash_tbl[%d]=<name=%s, rollno=%d, address=%s, age=%d, dept=%s>\n",
+    index, p_rec->name, p_rec->rollno, p_rec->address, p_rec->age, p_rec->dept);
+     return 1; // SUCCESS
+   }
+    
+   printf("Could not find the element. Checked the full hash table\n");
+   return 0; // FAILURE
 }
 
 /* Function : To delete a given element from the hash table 
  */
 int delete_hash_tbl(student_t hash_tbl[NUM_BUCKETS], char name[])
 {
-   int index;
+   int index, last_index;
+   student_t *p_rec;
 
    /* Generate Index */
    index = hash_func(name);
    printf("delete_hash_tbl : index = %d\n", index);
 
-   /* Is the element there ? */
-   if (strcmp(hash_tbl[index].name, name) != 0)
+   // Before starting, let us know when to stop
+   last_index = (index + NUM_BUCKETS - 1) % NUM_BUCKETS;
+   while ((strcmp(hash_tbl[index].name, name) != 0) && (index != last_index))
    {
-      printf("delete_hash_tbl : record with name %s does not exist\n", name);
-      return 0; // FAILURE
+      if ((strcmp(hash_tbl[index].name, "") == 0) && (hash_tbl[index].is_deleted == 0))
+      {
+          printf("Found empty (non-deleted) slot at index %d index... stopping.\n", index);
+          return 0; // no hope of finding it. return FAILURE
+      }
+
+      printf("Looked at Index %d name=[%s], is_deleted=%d... Trying next...\n", index, hash_tbl[index].name, hash_tbl[index].is_deleted);
+
+      // Keep Looking
+      index = (index + 1) % NUM_BUCKETS;
    }
 
-   /* Delete element by making name an empty string"" */
-   strcpy(hash_tbl[index].name,""); 
+   // We come here if 1) we find the element or 2) table is completely full
+   if (strcmp(hash_tbl[index].name, name) == 0)
+   {
+     // Found the element
+     p_rec = &hash_tbl[index];
+     printf("Found:hash_tbl[%d]=<name=%s, rollno=%d, address=%s, age=%d, dept=%s>\n",
+    index, p_rec->name, p_rec->rollno, p_rec->address, p_rec->age, p_rec->dept);
 
-   return 1; // SUCCESS
+     strcpy(hash_tbl[index].name, "");
+     hash_tbl[index].is_deleted = 1; // Set flag to TRUE
+     return 1; // SUCCESS
+   }
+    
+   printf("Could not find the element. Checked the full hash table\n");
+   return 0; // FAILURE
 }
 
 /* Function : To print the hash table
